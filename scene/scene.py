@@ -1,11 +1,25 @@
-# pylint: disable=W0614
+# pylint: disable=W0401,W0614,W0621,W0622
 import logging
 logger = logging.getLogger(__name__)
 
+import pathlib
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+import lah
+from renderer import AttributeLayout, Semantics, Drawer, ShaderProgram, MeshBuilder
 from .camera import Camera
+from .node import MeshNode, SceneContext
+
+vertex_layout = (
+    AttributeLayout(Semantics.POSITION, 'f', 3),
+    AttributeLayout(Semantics.NORMAL, 'f', 3),
+    AttributeLayout(Semantics.COLOR, 'f', 4),
+    AttributeLayout(Semantics.TEXCOORD, 'f', 2)
+)
+
+VS = (pathlib.Path(__file__).parent / 'shader.vert').read_text()
+FS = (pathlib.Path(__file__).parent / 'shader.frag').read_text()
 
 
 class Scene:
@@ -23,6 +37,15 @@ class Scene:
         self.mouseFirst = True
         self.camera = Camera()
         self.clear_color = (0.0, 0.0, 1.0, 0.0)
+
+        self.shader = ShaderProgram(VS, FS)
+        self.lightDir = lah.Vec3(1, -3, 10).normalized
+
+        builder = MeshBuilder(vertex_layout)
+        builder.create_cube(0.5)
+        mesh = Drawer(builder)
+        self.nodes = []
+        self.nodes.append(MeshNode('cube', self.shader, mesh))
 
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
@@ -78,6 +101,9 @@ class Scene:
     def onKeyDown(self, keycode):
         logger.debug('onKeyDown: %d', keycode)
 
+    def update(self, delta):
+        pass
+
     def initialize(self):
         logger.info(glGetString(GL_VERSION))
         logger.info(glGetString(GL_SHADING_LANGUAGE_VERSION))
@@ -98,4 +124,7 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # render
-        # self.scene.render(self.camera)
+        context = SceneContext(self.camera, self.lightDir)
+        for x in self.nodes:
+            context.set_model(x.model)
+            x.render(context)
