@@ -50,12 +50,6 @@ class Scene:
         mesh = Drawer(builder)
         self.gizmos.append(MeshNode('grid', self.shader, mesh))
 
-        # cube
-        builder = MeshBuilder(vertex_layout)
-        builder.create_cube(0.5)
-        mesh = Drawer(builder)
-        self.nodes.append(MeshNode('cube', self.shader, mesh))
-
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
         self.camera.resize(w, h)

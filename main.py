@@ -8,6 +8,7 @@ from PySide import QtGui, QtCore
 
 import glglue.pysidegl
 from scene import Scene
+import pyvbo
 
 
 class QPlainTextEditLogger(Handler):
@@ -82,13 +83,19 @@ class MainWindow(QtGui.QMainWindow):
         filename, _ = QtGui.QFileDialog.getOpenFileName(
             self, 'Open file',
             str(self._open_dir) if self._open_dir else None,
-            'Models(*.obj);;Images (*.png *.xpm *.jpg)')
+            ';;'.join([
+                'Models(*.pmd *.obj)',
+                'Images (*.png *.xpm *.jpg)'
+            ]))
         if not filename:
             return
 
         path = pathlib.Path(filename)
         self._open_dir = path.parent
         logger.info('open %s', path)
+
+        vbo = pyvbo.load(path)
+        logger.info(vbo)
         # self.scene.open(path)
 
 
