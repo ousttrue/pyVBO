@@ -38,6 +38,7 @@ class QPlainTextEditLogger(Handler):
 
         self.widget.textCursor().movePosition(QtGui.QTextCursor.Start)
         self.widget.textCursor().insertHtml(msg)
+        self.widget.moveCursor(QtGui.QTextCursor.End)        
 
     def write(self, m):
         pass
