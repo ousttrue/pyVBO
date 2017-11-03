@@ -2,6 +2,7 @@ from logging import getLogger, Handler, DEBUG, WARNING, ERROR
 logger = getLogger(__name__)
 
 import sys
+import pathlib
 from PySide import QtGui, QtCore
 
 import glglue.pysidegl
@@ -43,6 +44,7 @@ class QPlainTextEditLogger(Handler):
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, scene: Scene):
         super().__init__()
+        self._open_dir=None
         self.setWindowTitle('pyVboViewer')
         # setup opengl widget
         self.glwidget = glglue.pysidegl.Widget(self, scene)
@@ -54,6 +56,34 @@ class MainWindow(QtGui.QMainWindow):
         self.logger_dock = QtGui.QDockWidget("logger", self)
         self.logger_dock.setWidget(self.log_widget)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.logger_dock)
+
+        self.setup_menu()
+
+    def setup_menu(self):
+        '''
+        https://github.com/pyside/Examples/blob/master/examples/mainwindows/menus.py
+        '''
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+
+        openAction = QtGui.QAction("&Open...", self,
+                                   shortcut=QtGui.QKeySequence.Open,
+                                   statusTip="Open an existing file",
+                                   triggered=self.open)
+        fileMenu.addAction(openAction)
+
+    def open(self):
+        filename, _ = QtGui.QFileDialog.getOpenFileName(self,
+                                                        'Open file', 
+                                                        str(self._open_dir) if self._open_dir else None,
+                                                        'Models(*.obj);;Images (*.png *.xpm *.jpg)')
+        if not filename:
+            return
+
+        path = pathlib.Path(filename)
+        self._open_dir = path.parent
+        logger.info('open %s', path)
+        # self.scene.open(path)
 
 
 def main():
