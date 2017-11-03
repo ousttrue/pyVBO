@@ -1,8 +1,12 @@
 # pylint: disable=W0401,W0614,W0621,W0622
+from logging import getLogger, Handler, DEBUG, WARNING, ERROR
+logger = getLogger(__name__)
+
 from OpenGL.GL import *
 
 from .vbo import VBO
 from .texture import Texture
+from .vertexbuffer import Topology
 
 
 class Drawer:
@@ -13,6 +17,13 @@ class Drawer:
         self.stride = builder.stride
         self.vao = None
         self.texture = Texture()
+
+        if builder.topology == Topology.Triangle:
+            self.topology = GL_TRIANGLES
+        elif builder.topology == Topology.Line:
+            self.topology = GL_LINES
+        else:
+            raise Exception("unknown topology")
 
     def initialize(self):
         self.indices.initialize()
@@ -33,4 +44,4 @@ class Drawer:
 
         glBindVertexArray(self.vao)
 
-        self.indices.drawIndex()
+        self.indices.drawIndex(self.topology)

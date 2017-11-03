@@ -41,10 +41,19 @@ class Scene:
         self.shader = ShaderProgram(VS, FS)
         self.lightDir = lah.Vec3(1, -3, 10).normalized
 
+        self.gizmos = []
+        self.nodes = []
+
+        # grid
+        builder = MeshBuilder(vertex_layout)
+        builder.create_grid(1, 5)
+        mesh = Drawer(builder)
+        self.gizmos.append(MeshNode('grid', self.shader, mesh))
+
+        # cube
         builder = MeshBuilder(vertex_layout)
         builder.create_cube(0.5)
         mesh = Drawer(builder)
-        self.nodes = []
         self.nodes.append(MeshNode('cube', self.shader, mesh))
 
     def onResize(self, w: int, h: int):
@@ -125,6 +134,11 @@ class Scene:
 
         # render
         context = SceneContext(self.camera, self.lightDir)
+
+        for x in self.gizmos:
+            context.set_model(x.model)
+            x.render(context)
+
         for x in self.nodes:
             context.set_model(x.model)
             x.render(context)
