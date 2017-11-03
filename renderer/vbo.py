@@ -1,10 +1,11 @@
-from logging import getLogger, Handler, DEBUG, WARNING, ERROR
+from logging import getLogger
 logger = getLogger(__name__)
 
 
+import array
+import ctypes
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import ctypes
 
 
 def to_gltype(code):
@@ -21,20 +22,29 @@ def to_gltype(code):
 
 
 class VBO:
-    # array.array
-    def __init__(self, array):
+    def __init__(self, data, gltype=None):
         self.vbo = None
-        self.array = array
-        self.gltype = to_gltype(array.typecode)
+        self.data = data
+        if gltype:
+            self.gltype = gltype
+        else:
+            self.gltype = to_gltype(data.typecode)
 
     def initialize(self):
         self.vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
 
-        addr, count = self.array.buffer_info()
-        glBufferData(GL_ARRAY_BUFFER, self.array.itemsize *
-                     len(self.array), ctypes.c_void_p(addr), GL_STATIC_DRAW)
-        # (ctypes.c_float*len(self.vertices))(*self.vertices)
+        if isinstance(self.data, array.array):
+            addr, count = self.data.buffer_info()
+            glBufferData(GL_ARRAY_BUFFER,
+                         self.data.itemsize * len(self.data),
+                         ctypes.c_void_p(addr), GL_STATIC_DRAW)
+        elif isinstance(self.data, ctypes.Array):
+            glBufferData(GL_ARRAY_BUFFER,
+                         ctypes.sizeof(self.data._type_) * self.data._length_,
+                         self.data, GL_STATIC_DRAW)
+        else:
+            raise NotImplementedError()
 
     def setAttrib(self, slot, layout, stride):
         glEnableVertexAttribArray(slot)
@@ -51,4 +61,4 @@ class VBO:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.vbo)
 
     def drawIndex(self, topology):
-        glDrawElements(topology, len(self.array), self.gltype, None)
+        glDrawElements(topology, len(self.data), self.gltype, None)

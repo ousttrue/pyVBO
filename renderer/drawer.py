@@ -6,16 +6,34 @@ from OpenGL.GL import *
 
 from .vbo import VBO
 from .texture import Texture
-from .vertexbuffer import Topology
+from .vertexbuffer import Topology, AttributeLayout, Semantics
+
+
+pmd_vertex_layout = (
+    AttributeLayout(Semantics.POSITION, 'f', 3),
+    AttributeLayout(Semantics.NORMAL, 'f', 3),
+    AttributeLayout(Semantics.TEXCOORD, 'f', 2)
+)
+pmd_vertex_stride = 38
 
 
 class Drawer:
-    def __init__(self, builder):
+    def __init__(self):
+        self.indices = None
+        self.vertices = None
+        self.layout = None
+        self.stride = 0
+        self.vao = None
+        self.texture = None
+        self.topology = None
+
+    @staticmethod
+    def from_builder(builder):
+        self = Drawer()
         self.indices = VBO(builder.indices)
         self.vertices = VBO(builder.vertices)
         self.layout = builder.layout
         self.stride = builder.stride
-        self.vao = None
         self.texture = Texture()
 
         if builder.topology == Topology.Triangle:
@@ -24,6 +42,19 @@ class Drawer:
             self.topology = GL_LINES
         else:
             raise Exception("unknown topology")
+
+        return self
+
+    @staticmethod
+    def from_pmd(pmd):
+        self = Drawer()
+        self.indices = VBO(pmd.indices)
+        self.vertices = VBO(pmd.vertices, GL_FLOAT)
+        self.layout = pmd_vertex_layout
+        self.stride = pmd_vertex_stride
+        self.texture = Texture()
+        self.topology = GL_TRIANGLES
+        return self
 
     def initialize(self):
         self.indices.initialize()

@@ -9,7 +9,7 @@ from PySide import QtGui, QtCore
 import glglue.pysidegl
 from scene import Scene
 import pyvbo
-
+from renderer import Drawer
 
 class QPlainTextEditLogger(Handler):
     '''
@@ -46,8 +46,10 @@ class QPlainTextEditLogger(Handler):
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, scene: Scene):
         super().__init__()
+        self.scene = scene
         self._open_dir = None
         self.setWindowTitle('pyVboViewer')
+
         # setup opengl widget
         self.glwidget = glglue.pysidegl.Widget(self, scene)
         self.setCentralWidget(self.glwidget)
@@ -94,9 +96,18 @@ class MainWindow(QtGui.QMainWindow):
         self._open_dir = path.parent
         logger.info('open %s', path)
 
-        vbo = pyvbo.load(path)
-        logger.info(vbo)
-        # self.scene.open(path)
+        model = pyvbo.load(path)
+        logger.info(model)
+
+        # fix scale
+        for i, v in enumerate(model.vertices):
+            model.vertices[i].pos.x*=model.metadata.to_meter
+            model.vertices[i].pos.y*=model.metadata.to_meter
+            model.vertices[i].pos.z*=model.metadata.to_meter
+
+        mesh = Drawer.from_pmd(model)
+
+        self.scene.add_mesh(model.metadata.name, mesh)
 
 
 def loop(app, window, scene):

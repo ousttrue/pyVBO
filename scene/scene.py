@@ -18,6 +18,7 @@ vertex_layout = (
     AttributeLayout(Semantics.TEXCOORD, 'f', 2)
 )
 
+
 VS = (pathlib.Path(__file__).parent / 'shader.vert').read_text()
 FS = (pathlib.Path(__file__).parent / 'shader.frag').read_text()
 
@@ -47,8 +48,12 @@ class Scene:
         # grid
         builder = MeshBuilder(vertex_layout)
         builder.create_grid(1, 5)
-        mesh = Drawer(builder)
+        mesh = Drawer.from_builder(builder)
         self.gizmos.append(MeshNode('grid', self.shader, mesh))
+
+    def add_mesh(self, name, mesh):
+        self.nodes.clear()
+        self.nodes.append(MeshNode(name, self.shader, mesh))
 
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
