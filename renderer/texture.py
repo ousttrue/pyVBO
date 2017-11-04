@@ -11,8 +11,10 @@ class Texture:
         self.sampler = None
         self.image = None
 
-    def create_texture(self, w, h, bytes):
-        self.image = (w, h, bytes)
+    def create_texture(self, w, h, data):
+        size = len(data)
+        assert size == w * h * 4
+        self.image = (w, h, data)
 
     def initialize(self):
         self.sampler = glGenSamplers(1)
@@ -25,17 +27,17 @@ class Texture:
         glBindTexture(GL_TEXTURE_2D, self.texture)
         if self.image:
             #logger.info('initialize texture')
-            w, h, bytes = self.image
+            w, h, data = self.image
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, bytes)
+                         GL_RGBA, GL_UNSIGNED_BYTE, data)
         else:
             #logger.info('initialize texture. default white')
             # white
             w = 4
             h = 4
-            bytes = [255 for x in range(w * h * 4)]
+            data = [255 for x in range(w * h * 4)]
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, bytes)
+                         GL_RGBA, GL_UNSIGNED_BYTE, data)
 
     def bind(self):
         if not self.texture:

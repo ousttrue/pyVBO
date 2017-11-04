@@ -114,12 +114,15 @@ class MainWindow(QtGui.QMainWindow):
         def create_submesh(material):
             texture = Texture()
             if material.texture:
-                texture_file = path.parent / material.texture.decode('cp932')
+                texture_name = material.texture.decode('cp932')
+                if '*' in texture_name:
+                    texture_name, spa = texture_name.split('*', 1)
+                texture_file = path.parent / texture_name
                 if texture_file.exists():
                     logger.debug("%s exists", texture_file)
                     with texture_file.open('rb') as f:
                         image = Image.open(f)
-                        image.convert('RGBA')
+                        image=image.convert('RGBA')
                     texture.create_texture(
                         image.width, image.height, image.tobytes())
                 else:
