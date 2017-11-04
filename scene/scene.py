@@ -7,9 +7,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 import lah
-from renderer import AttributeLayout, Semantics, Drawer, ShaderProgram, MeshBuilder
-from .camera import Camera
-from .node import MeshNode, SceneContext
+from renderer import AttributeLayout, Semantics, Drawer, ShaderProgram, MeshBuilder, Camera, RenderContext
+from .node import MeshNode
 
 vertex_layout = (
     AttributeLayout(Semantics.POSITION, 'f', 3),
@@ -49,11 +48,12 @@ class Scene:
         builder = MeshBuilder(vertex_layout)
         builder.create_grid(1, 5)
         mesh = Drawer.from_builder(builder)
-        self.gizmos.append(MeshNode('grid', self.shader, mesh))
+        mesh.create_submesh(self.shader)
+        self.gizmos.append(MeshNode('grid', mesh))
 
-    def add_mesh(self, name, mesh):
+    def add_mesh(self, name, mesh: Drawer):
         self.nodes.clear()
-        self.nodes.append(MeshNode(name, self.shader, mesh))
+        self.nodes.append(MeshNode(name, mesh))
 
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
@@ -132,7 +132,7 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # render
-        context = SceneContext(self.camera, self.lightDir)
+        context = RenderContext(self.camera, self.lightDir)
 
         for x in self.gizmos:
             context.set_model(x.model)

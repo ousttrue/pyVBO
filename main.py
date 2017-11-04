@@ -9,7 +9,8 @@ from PySide import QtGui, QtCore
 import glglue.pysidegl
 from scene import Scene
 import pyvbo
-from renderer import Drawer
+from renderer import Drawer, SubMesh, Texture
+
 
 class QPlainTextEditLogger(Handler):
     '''
@@ -38,7 +39,7 @@ class QPlainTextEditLogger(Handler):
 
         self.widget.textCursor().movePosition(QtGui.QTextCursor.Start)
         self.widget.textCursor().insertHtml(msg)
-        self.widget.moveCursor(QtGui.QTextCursor.End)        
+        self.widget.moveCursor(QtGui.QTextCursor.End)
 
     def write(self, m):
         pass
@@ -101,12 +102,21 @@ class MainWindow(QtGui.QMainWindow):
         logger.info(model)
 
         # fix scale
-        for i, v in enumerate(model.vertices):
-            model.vertices[i].pos.x*=model.metadata.to_meter
-            model.vertices[i].pos.y*=model.metadata.to_meter
-            model.vertices[i].pos.z*=model.metadata.to_meter
+        for i in range(len(model.vertices)):
+            model.vertices[i].pos.x *= model.metadata.to_meter
+            model.vertices[i].pos.y *= model.metadata.to_meter
+            model.vertices[i].pos.z *= model.metadata.to_meter
 
         mesh = Drawer.from_pmd(model)
+
+        def create_submesh(material):
+            texture=Texture()
+            '''
+            if material.texture:
+                texture.create_texture()
+            '''
+            return SubMesh(self.scene.shader, material.index_count, material.color, texture)
+        mesh.submeshes = [create_submesh(x) for x in  model.materials]
 
         self.scene.add_mesh(model.metadata.name, mesh)
 
@@ -151,13 +161,13 @@ def main():
 
     app = QtGui.QApplication(sys.argv)
     window = MainWindow(scene)
+
     # add handler to rootLogger
     getLogger('').addHandler(window.log_handler)
     logger.debug('set logger')
 
     window.resize(640, 480)
     window.show()
-    # sys.exit(app.exec_())
 
     loop(app, window, scene)
     logger.info('loop exit')

@@ -51,7 +51,7 @@ assert ctypes.sizeof(Vertex) == 38
 class Material(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        ('diffuse', Float4),
+        ('color', ctypes.c_float * 4),
         ('specularity', ctypes.c_float),
         ('specular', Float3),
         ('ambient', Float3),

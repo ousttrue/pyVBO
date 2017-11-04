@@ -72,22 +72,25 @@ class ShaderProgram:
 
     def set_uniform_texture(self, name, slot):
         loc = self.get_uniform(name)
-        if loc:
+        if loc is not None:
             glUniform1i(loc, slot)
 
     def set_uniform_vec3(self, name, value):
         loc = self.get_uniform(name)
-        if loc:
+        if loc is not None:
             glUniform3fv(loc, 1, value)
+
+    def set_uniform_vec4(self, name, value):
+        loc = self.get_uniform(name)
+        if loc is not None:
+            glUniform4fv(loc, 1, value)
 
     def set_uniform_mat3(self, name, value):
         id = glGetUniformLocation(self.program, name)
-        if id < 0:
-            return
-        glUniformMatrix3fv(id, 1, GL_FALSE, value)
+        if id is not None:
+            glUniformMatrix3fv(id, 1, GL_FALSE, value)
 
     def set_uniform_mat4(self, name, value):
         id = glGetUniformLocation(self.program, name)
-        if id < 0:
-            return
-        glUniformMatrix4fv(id, 1, GL_FALSE, value)
+        if id is not None:
+            glUniformMatrix4fv(id, 1, GL_FALSE, value)

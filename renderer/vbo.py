@@ -1,3 +1,4 @@
+# pylint: disable=W0401,W0614,W0621,W0622
 from logging import getLogger
 logger = getLogger(__name__)
 
@@ -35,7 +36,7 @@ class VBO:
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
 
         if isinstance(self.data, array.array):
-            addr, count = self.data.buffer_info()
+            addr, _ = self.data.buffer_info()
             glBufferData(GL_ARRAY_BUFFER,
                          self.data.itemsize * len(self.data),
                          ctypes.c_void_p(addr), GL_STATIC_DRAW)
@@ -54,11 +55,21 @@ class VBO:
                               to_gltype(layout.value_type),
                               False,
                               stride,
-                              ctypes.c_void_p(layout.offset)
-                              )
+                              ctypes.c_void_p(layout.offset))
 
     def setIndex(self):
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.vbo)
 
-    def drawIndex(self, topology):
-        glDrawElements(topology, len(self.data), self.gltype, None)
+    def drawIndex(self, topology, offset=0, count=0):
+        if count:
+            glDrawElements(
+                topology,
+                count,
+                self.gltype,
+                ctypes.c_void_p(offset * self.data.itemsize))
+        else:
+            glDrawElements(
+                topology,
+                len(self.data),
+                self.gltype,
+                ctypes.c_void_p(0))
