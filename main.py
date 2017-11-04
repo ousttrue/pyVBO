@@ -4,7 +4,9 @@ logger = getLogger(__name__)
 import sys
 import time
 import pathlib
+
 from PySide import QtGui, QtCore
+from PIL import Image
 
 import glglue.pysidegl
 from scene import Scene
@@ -110,13 +112,20 @@ class MainWindow(QtGui.QMainWindow):
         mesh = Drawer.from_pmd(model)
 
         def create_submesh(material):
-            texture=Texture()
-            '''
+            texture = Texture()
             if material.texture:
-                texture.create_texture()
-            '''
+                texture_file = path.parent / material.texture.decode('cp932')
+                if texture_file.exists():
+                    logger.debug("%s exists", texture_file)
+                    with texture_file.open('rb') as f:
+                        image = Image.open(f)
+                        image.convert('RGBA')
+                    texture.create_texture(
+                        image.width, image.height, image.tobytes())
+                else:
+                    logger.warning("%s not exists", texture_file)
             return SubMesh(self.scene.shader, material.index_count, material.color, texture)
-        mesh.submeshes = [create_submesh(x) for x in  model.materials]
+        mesh.submeshes = [create_submesh(x) for x in model.materials]
 
         self.scene.add_mesh(model.metadata.name, mesh)
 

@@ -21,6 +21,7 @@ void main() {
     vec3 fNormal = normalize((uM * vec4(aNormal, 0)).xyz);
     float diffuse = max(dot(-uLightDir, fNormal), 0);
 
-    vColor = aColor; // * diffuse;
+    //vColor = aColor * diffuse;
+    vColor = vec4(1, 1, 1, 1) * diffuse;
     vUV=aUV;
 }

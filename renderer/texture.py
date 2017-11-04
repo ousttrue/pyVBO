@@ -24,12 +24,12 @@ class Texture:
         self.texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         if self.image:
-            logger.info('initialize texture')
+            #logger.info('initialize texture')
             w, h, bytes = self.image
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, bytes)
         else:
-            logger.info('initialize texture. default white')
+            #logger.info('initialize texture. default white')
             # white
             w = 4
             h = 4

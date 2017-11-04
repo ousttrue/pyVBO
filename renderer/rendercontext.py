@@ -8,7 +8,7 @@ class RenderContext:
         self._mv = None
         self._mvp = None
         self.set_model(None)
-        self.color=(1, 1, 1, 1)
+        self.color = (1, 1, 1, 1)
 
     def set_model(self, transform):
         self.transform = transform
