@@ -5,8 +5,9 @@ pyVBO
 pythonでVBOを便利に処理するライブラリ。
 
 * python3
-* array.array('b')で処理する
+* array.arrayもしくはctypes.Arrayでバッファを構築する
 * 各種モデルフォーマットとの相互変換
+* typingの実験
 
 ::
 
@@ -23,5 +24,10 @@ pythonでVBOを便利に処理するライブラリ。
 ToDo
 ====
 
-* File.open
-* File.save
+* VertexList
+* MaterialList
+* Shader Selector
+* BoundingBox
+* Bone gizmo
+* Transform gizmo
+
