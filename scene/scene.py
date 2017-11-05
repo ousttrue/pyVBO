@@ -27,7 +27,7 @@ class Scene:
         self.mouseY = 0
         self.mouseFirst = True
         self.camera = Camera()
-        self.clear_color = (0.0, 0.0, 1.0, 0.0)
+        self.background_color = (0.0, 0.0, 1.0, 0.0)
 
         self.gizmo_shader = shaders.GizmoShader
         self.lightDir = lah.Vec3(1, -3, 10).normalized
@@ -119,7 +119,7 @@ class Scene:
             self.initialize()
 
         # clear
-        glClearColor(*self.clear_color)
+        glClearColor(*self.background_color)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # render

@@ -12,6 +12,7 @@ from scene import Scene
 import pyvbo
 from renderer import Drawer
 import shaders
+from widgets import SceneTreeWidget
 
 
 class QPlainTextEditLogger(Handler):
@@ -61,11 +62,21 @@ class MainWindow(QtGui.QMainWindow):
         # logger dock
         self.log_widget = QtGui.QTextEdit(self)
         self.log_handler = QPlainTextEditLogger(self.log_widget)
-        self.logger_dock = QtGui.QDockWidget("logger", self)
-        self.logger_dock.setWidget(self.log_widget)
-        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.logger_dock)
+        self.logger_dock = self.create_dock(
+            self.log_widget, "logger", QtCore.Qt.BottomDockWidgetArea)
+
+        # scene tree dock
+        self.scene_widget = SceneTreeWidget(self, scene)
+        self.scene_dock = self.create_dock(
+            self.scene_widget, "scene", QtCore.Qt.LeftDockWidgetArea)
 
         self.setup_menu()
+
+    def create_dock(self, widget, name, area):
+        dock = QtGui.QDockWidget(name, self)
+        dock.setWidget(widget)
+        self.addDockWidget(area, dock)
+        return dock
 
     def closeEvent(self, evnt):
         if self.onClosed:
