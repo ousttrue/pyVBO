@@ -26,7 +26,7 @@ class Scene:
         self.mouseX = 0
         self.mouseY = 0
         self.mouseFirst = True
-        self.background_color = Prop[RGBAf](RGBAf(0.0, 0.0, 1.0, 0.0))
+        self.background_color = Prop[RGBAf](RGBAf(0.3, 0.3, 0.5, 0.0))
 
         #
         # gizmos
@@ -34,13 +34,21 @@ class Scene:
         self.gizmos = ListProp[Node]()
         self.gizmo_shader = shaders.GizmoShader
 
+        # axis
+        builder = MeshBuilder(self.gizmo_shader.vertex_layout)
+        builder.create_axis(5)
+        axis_mesh = Drawer.from_builder(builder, self.gizmo_shader)
+        axis_node = Node('axis')
+        axis_node.model.pos=lah.Vec3(0, 0.001, 0)
+        axis_node.components.append(MeshComponent(axis_mesh))
+        self.gizmos.append(axis_node)
+
         # grid
         builder = MeshBuilder(self.gizmo_shader.vertex_layout)
         builder.create_grid(1, 5)
-        mesh = Drawer.from_builder(builder)
-        mesh.create_submesh(self.gizmo_shader)
+        grid_mesh = Drawer.from_builder(builder, self.gizmo_shader)
         grid_node = Node('grid')
-        grid_node.components.append(MeshComponent(mesh))
+        grid_node.components.append(MeshComponent(grid_mesh))
         self.gizmos.append(grid_node)
 
         # camera

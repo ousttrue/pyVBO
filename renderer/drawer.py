@@ -6,7 +6,7 @@ from OpenGL.GL import *
 
 from .vbo import VBO
 from .texture import Texture
-from .vertexbuffer import Topology, AttributeLayout, Semantics
+from .vertexbuffer import Topology, AttributeLayout, Semantics, MeshBuilder
 from .rendercontext import RenderContext
 from .glsl import ShaderProgram
 from pyvbo import pmd
@@ -44,7 +44,7 @@ class Drawer:
         self.submeshes = []
 
     @staticmethod
-    def from_builder(builder):
+    def from_builder(builder: MeshBuilder, shader: ShaderProgram):
         self = Drawer()
         self.indices = VBO(builder.indices)
         self.vertices = VBO(builder.vertices)
@@ -58,10 +58,12 @@ class Drawer:
         else:
             raise Exception("unknown topology")
 
+        self.create_submesh(shader)
+
         return self
 
     @staticmethod
-    def from_pmd(model: pmd.Model, shader:ShaderProgram):
+    def from_pmd(model: pmd.Model, shader: ShaderProgram):
         self = Drawer()
         self.indices = VBO(model.indices)
         self.vertices = VBO(model.vertices, GL_FLOAT)
@@ -86,7 +88,7 @@ class Drawer:
                 else:
                     logger.warning("%s not exists", texture_file)
             return SubMesh(shader, material.index_count, material.color, texture)
-        self.submeshes = [create_submesh(x) for x in model.materials]        
+        self.submeshes = [create_submesh(x) for x in model.materials]
         return self
 
     def initialize(self):

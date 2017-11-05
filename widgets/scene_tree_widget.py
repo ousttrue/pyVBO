@@ -103,9 +103,11 @@ class SceneTreeWidget(QtGui.QWidget):
         self.scene.background_color.connect(from_prop)
 
         def background_color_clicked():
-            color = QtGui.QColorDialog.getColor()
-            self.scene.background_color.value = RGBAf(
-                color.redF(), color.greenF(), color.blueF(), color.alphaF())
+            color = QtGui.QColorDialog.getColor(
+                QtGui.QColor.fromRgbF(*self.scene.background_color.value))
+            if color.isValid():
+                self.scene.background_color.value = RGBAf(
+                    color.redF(), color.greenF(), color.blueF(), color.alphaF())
         background_color.clicked.connect(background_color_clicked)
 
         return background_color

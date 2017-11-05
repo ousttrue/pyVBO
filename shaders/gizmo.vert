@@ -18,10 +18,11 @@ out vec2 vUV;
 void main() {
     gl_Position = uPVM * vec4(aPosition, 1);
 
+    /*
     vec3 fNormal = normalize((uM * vec4(aNormal, 0)).xyz);
     float diffuse = max(dot(-uLightDir, fNormal), 0);
-
-    //vColor = aColor * diffuse;
-    vColor = vec4(1, 1, 1, 1) * diffuse;
+    */
+    
+    vColor = aColor;
     vUV=aUV;
 }

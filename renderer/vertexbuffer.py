@@ -133,6 +133,21 @@ class MeshBuilder:
             self.Vertex((-s, s, 0), (0, 0, 1), (1, 1, 1, 1), (0, 1))
         )
 
+    def create_axis(self, size: float):
+        self.topology = Topology.Line
+        self.push_line(
+            self.Vertex((0, 0, 0), (0, 0, 0), (1, 0, 0, 1), (0, 0)),
+            self.Vertex((size, 0, 0), (0, 0, 0), (1, 0, 0, 1), (0, 0))
+        )
+        self.push_line(
+            self.Vertex((0, 0, 0), (0, 0, 0), (0, 1, 0, 1), (0, 0)),
+            self.Vertex((0, size, 0), (0, 0, 0), (0, 1, 0, 1), (0, 0))
+        )
+        self.push_line(
+            self.Vertex((0, 0, 0), (0, 0, 0), (0, 0, 1, 1), (0, 0)),
+            self.Vertex((0, 0, size), (0, 0, 0), (0, 0, 1, 1), (0, 0))
+        )
+
     def create_grid(self, delta: float, count: int):
         self.topology = Topology.Line
         size = delta * count
