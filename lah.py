@@ -16,7 +16,7 @@ pos = vec4 * Model * View * Projection
 | 8  9 10 11|
 |12 13 14 15|
 
-# glsl(col major) 
+# glsl(col major)
 
 glUniformMatrix4fv(loc, cnt, False, matrix)
 (transposed)
@@ -54,13 +54,16 @@ class Vec3:
         return f'[{self.x}, {self.y}, {self.z}]'
 
     @property
-    def x(self): return self.array[0]
+    def x(self):
+        return self.array[0]
 
     @property
-    def y(self): return self.array[1]
+    def y(self):
+        return self.array[1]
 
     @property
-    def z(self): return self.array[2]
+    def z(self):
+        return self.array[2]
 
     @staticmethod
     def zero():
@@ -84,13 +87,16 @@ class Vec3:
         return self.array.__iter__()
 
     @property
-    def sqnorm(self): return self.dot(self)
+    def sqnorm(self):
+        return self.dot(self)
 
     @property
-    def norm(self): return math.sqrt(self.sqnorm)
+    def norm(self):
+        return math.sqrt(self.sqnorm)
 
     @property
-    def normalized(self): return self * (1 / self.norm)
+    def normalized(self):
+        return self * (1 / self.norm)
 
 
 class Vec4:
@@ -103,16 +109,20 @@ class Vec4:
             self.array = [args[0], args[1], args[2], args[3]]
 
     @property
-    def x(self): return self.array[0]
+    def x(self):
+        return self.array[0]
 
     @property
-    def y(self): return self.array[1]
+    def y(self):
+        return self.array[1]
 
     @property
-    def z(self): return self.array[2]
+    def z(self):
+        return self.array[2]
 
     @property
-    def w(self): return self.array[3]
+    def w(self):
+        return self.array[3]
 
     def __iter__(self):
         return self.array.__iter__()
@@ -140,21 +150,25 @@ class Quaternion:
         return f'[{self.x}, {self.y}, {self.z}, {self.w}]'
 
     @property
-    def x(self): return self.array[0]
+    def x(self):
+        return self.array[0]
 
     @property
-    def y(self): return self.array[1]
+    def y(self):
+        return self.array[1]
 
     @property
-    def z(self): return self.array[2]
+    def z(self):
+        return self.array[2]
 
     @property
-    def w(self): return self.array[3]
+    def w(self):
+        return self.array[3]
 
     def axis_angle(self):
         angle = 2 * math.acos(self.w)
         s = math.sqrt(1 - self.w * self.w)
-        if (s < 0.001):
+        if s < 0.001:
             x = self.x
             y = self.y
             z = self.z
@@ -189,8 +203,7 @@ class Quaternion:
 
                     2 * self.x * self.z + 2 * self.w * self.y,
                     2 * self.y * self.z - 2 * self.w * self.x,
-                    1 - 2 * self.x * self.x - 2 * self.y * self.y
-                    )
+                    1 - 2 * self.x * self.x - 2 * self.y * self.y)
 
 
 class Mat3:
@@ -200,8 +213,7 @@ class Mat3:
                 raise ValueError('Mat3.__init__ 3')
             self.array = [args[0].x, args[0].y, args[0].z,
                           args[1].x, args[1].y, args[1].z,
-                          args[2].x, args[2].y, args[2].z,
-                          ]
+                          args[2].x, args[2].y, args[2].z]
         else:
             if len(args) != 9:
                 raise ValueError('Mat3.__init__ 9')
@@ -224,8 +236,7 @@ class Mat4:
             self.array = [args[0].x, args[0].y, args[0].z, args[0].w,
                           args[1].x, args[1].y, args[1].z, args[1].w,
                           args[2].x, args[2].y, args[2].z, args[2].w,
-                          args[3].x, args[3].y, args[3].z, args[3].w
-                          ]
+                          args[3].x, args[3].y, args[3].z, args[3].w]
         else:
             if len(args) != 16:
                 raise ValueError('Mat4.__init__ 16')
@@ -287,8 +298,7 @@ class Mat4:
         applied = Vec4(v4.dot(self.col(0)),
                        v4.dot(self.col(1)),
                        v4.dot(self.col(2)),
-                       v4.dot(self.col(3))
-                       )
+                       v4.dot(self.col(3)))
 
         if isinstance(v, Vec3):
             return applied.vec3
@@ -300,8 +310,7 @@ class Mat4:
         return Mat4(1, 0, 0, 0,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
-                    0, 0, 0, 1
-                    )
+                    0, 0, 0, 1)
 
     @staticmethod
     def orthognonal(l, r, b, t, n, f):
@@ -319,8 +328,7 @@ class Mat4:
         return Mat4(f / aspect, 0, 0, 0,
                     0, f, 0, 0,
                     0, 0, 2 / (f - n), 1,
-                    0, 0, -(n + f) / (f - n), 0
-                    )
+                    0, 0, -(n + f) / (f - n), 0)
 
     @staticmethod
     def perspective_rh(fovy, aspect, zNear, zFar):
@@ -329,8 +337,7 @@ class Mat4:
         return Mat4(f / aspect, 0, 0, 0,
                     0, f, 0, 0,
                     0, 0, (zFar + zNear) / (zNear - zFar), -1,
-                    0, 0, 2 * zFar * zNear / (zNear - zFar), 0
-                    )
+                    0, 0, 2 * zFar * zNear / (zNear - zFar), 0)
 
     @staticmethod
     def perspective_lh(fovy, aspect, zNear, zFar):
@@ -339,16 +346,14 @@ class Mat4:
         return Mat4(f / aspect, 0, 0, 0,
                     0, f, 0, 0,
                     0, 0, (zFar + zNear) / (zFar - zNear), -1,
-                    0, 0, 2 * zFar * zNear / (zFar - zNear), 0
-                    )
+                    0, 0, 2 * zFar * zNear / (zFar - zNear), 0)
 
     @staticmethod
     def translate(x, y, z):
         return Mat4(1, 0, 0, 0,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
-                    x, y, z, 1
-                    )
+                    x, y, z, 1)
 
     @staticmethod
     def rotateXAxisByDegrees(degree):
@@ -358,8 +363,7 @@ class Mat4:
         return Mat4(1, 0, 0, 0,
                     0, c, s, 0,
                     0, -s, c, 0,
-                    0, 0, 0, 1
-                    )
+                    0, 0, 0, 1)
 
     @staticmethod
     def rotateYAxisByDegrees(degree):
@@ -369,8 +373,7 @@ class Mat4:
         return Mat4(c, 0, -s, 0,
                     0, 1, 0, 0,
                     s, 0, c, 0,
-                    0, 0, 0, 1
-                    )
+                    0, 0, 0, 1)
 
     @staticmethod
     def rotateZAxisByRadians(rad):
@@ -379,8 +382,7 @@ class Mat4:
         return Mat4(c, s, 0, 0,
                     -s, c, 0, 0,
                     0, 0, 1, 0,
-                    0, 0, 0, 1
-                    )
+                    0, 0, 0, 1)
 
 
 class Transform:
