@@ -12,7 +12,7 @@ from scene import Scene
 import pyvbo
 from renderer import Drawer
 import shaders
-from widgets import SceneTreeWidget
+from widgets import SceneTreeWidget, InspectorWidget
 
 
 class QPlainTextEditLogger(Handler):
@@ -49,16 +49,24 @@ class QPlainTextEditLogger(Handler):
 
 
 class MainWindow(QtGui.QMainWindow):
-    def __init__(self, scene: Scene):
+    def __init__(self, scene: Scene)->None:
         super().__init__()
         self.scene = scene
         self._open_dir = None
         self.setWindowTitle('pyVboViewer')
+        self.menubar = self.menuBar()
 
         # setup opengl widget
         self.glwidget = glglue.pysidegl.Widget(self, scene)
         self.setCentralWidget(self.glwidget)
 
+        # menu
+        self.setup_file_menu()
+        self.dock_menu = self.menubar.addMenu('&Dock')
+
+        #
+        # dock
+        #
         # logger dock
         self.log_widget = QtGui.QTextEdit(self)
         self.log_handler = QPlainTextEditLogger(self.log_widget)
@@ -70,12 +78,16 @@ class MainWindow(QtGui.QMainWindow):
         self.scene_dock = self.create_dock(
             self.scene_widget, "scene", QtCore.Qt.LeftDockWidgetArea)
 
-        self.setup_menu()
+        # inspector dock
+        self.inspector_widget = InspectorWidget(self)
+        self.inspector_dock = self.create_dock(
+            self.inspector_widget, "inspector", QtCore.Qt.RightDockWidgetArea)
 
     def create_dock(self, widget, name, area):
         dock = QtGui.QDockWidget(name, self)
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
+        self.dock_menu.addAction(dock.toggleViewAction())
         return dock
 
     def closeEvent(self, evnt):
@@ -83,18 +95,17 @@ class MainWindow(QtGui.QMainWindow):
             self.onClosed()
         super().closeEvent(evnt)
 
-    def setup_menu(self):
+    def setup_file_menu(self):
         '''
         https://github.com/pyside/Examples/blob/master/examples/mainwindows/menus.py
         '''
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
+        file_menu = self.menubar.addMenu('&File')
 
         openAction = QtGui.QAction("&Open...", self,
                                    shortcut=QtGui.QKeySequence.Open,
                                    statusTip="Open an existing file",
                                    triggered=self.open)
-        fileMenu.addAction(openAction)
+        file_menu.addAction(openAction)
 
     def open(self):
         filename, _ = QtGui.QFileDialog.getOpenFileName(
