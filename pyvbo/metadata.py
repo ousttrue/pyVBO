@@ -1,4 +1,5 @@
 from enum import Enum
+import pathlib
 
 
 class Direction(Enum):
@@ -17,12 +18,13 @@ class Coordinate(Enum):
 
 
 class MetaData:
-    def __init__(self, name: str, comment: str,
+    def __init__(self, path: pathlib.Path, name: str, comment: str,
                  coord: Coordinate,
                  up: Direction,
                  forward: Direction,
                  right: Direction,
                  to_meter=1.0):
+        self.path = path.absolute()
         self.name = name
         self.comment = comment
         self.coord = coord
@@ -30,3 +32,7 @@ class MetaData:
         self.up = up
         self.right = right
         self.to_meter = to_meter
+
+    @property
+    def base_path(self):
+        return self.path.parent

@@ -8,14 +8,9 @@ from .vbo import VBO
 from .texture import Texture
 from .vertexbuffer import Topology, AttributeLayout, Semantics
 from .rendercontext import RenderContext
-
-
-pmd_vertex_layout = (
-    AttributeLayout(Semantics.POSITION, 'f', 3),
-    AttributeLayout(Semantics.NORMAL, 'f', 3),
-    AttributeLayout(Semantics.TEXCOORD, 'f', 2)
-)
-pmd_vertex_stride = 38
+from .glsl import ShaderProgram
+from pyvbo import pmd
+from PIL import Image
 
 
 class SubMesh:
@@ -66,13 +61,32 @@ class Drawer:
         return self
 
     @staticmethod
-    def from_pmd(pmd):
+    def from_pmd(model: pmd.Model, shader:ShaderProgram):
         self = Drawer()
-        self.indices = VBO(pmd.indices)
-        self.vertices = VBO(pmd.vertices, GL_FLOAT)
-        self.layout = pmd_vertex_layout
-        self.stride = pmd_vertex_stride
+        self.indices = VBO(model.indices)
+        self.vertices = VBO(model.vertices, GL_FLOAT)
+        self.layout = shader.vertex_layout
+        self.stride = shader.vertex_stride
         self.topology = GL_TRIANGLES
+
+        def create_submesh(material):
+            texture = Texture()
+            if material.texture:
+                texture_name = material.texture.decode('cp932')
+                if '*' in texture_name:
+                    texture_name, _ = texture_name.split('*', 1)
+                texture_file = model.metadata.base_path / texture_name
+                if texture_file.exists():
+                    logger.debug("%s exists", texture_file)
+                    with texture_file.open('rb') as f:
+                        image = Image.open(f)
+                        image = image.convert('RGBA')
+                    texture.create_texture(
+                        image.width, image.height, image.tobytes())
+                else:
+                    logger.warning("%s not exists", texture_file)
+            return SubMesh(shader, material.index_count, material.color, texture)
+        self.submeshes = [create_submesh(x) for x in model.materials]        
         return self
 
     def initialize(self):

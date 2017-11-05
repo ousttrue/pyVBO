@@ -3,6 +3,7 @@ logger = getLogger(__name__)
 
 import ctypes
 import array
+import pathlib
 
 from .bytesreader import BytesReader
 from .metadata import MetaData, Direction, Coordinate
@@ -76,7 +77,7 @@ class Model:
         return f'{{Pmd {self.metadata.name}}}'
 
 
-def load_bytes(data: bytes):
+def load_bytes(data: bytes, path: pathlib.Path):
     # header
     r = BytesReader(data)
     if r.get_bytes(3) != b'Pmd':
@@ -112,7 +113,7 @@ def load_bytes(data: bytes):
     logger.debug('%d materials. %d bytes', material_count, len(materials))
 
     metadata = MetaData(
-        name, comment,
+        path, name, comment,
         Coordinate.YUP_ZFORWARD,
         Direction.Y_POSITIVE,
         Direction.Z_NEGATIVE,

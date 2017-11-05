@@ -7,19 +7,10 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 import lah
-from renderer import AttributeLayout, Semantics, Drawer, ShaderProgram, MeshBuilder, Camera, RenderContext
+from renderer import Drawer, ShaderProgram, MeshBuilder, Camera, RenderContext
 from .node import MeshNode
 
-vertex_layout = (
-    AttributeLayout(Semantics.POSITION, 'f', 3),
-    AttributeLayout(Semantics.NORMAL, 'f', 3),
-    AttributeLayout(Semantics.COLOR, 'f', 4),
-    AttributeLayout(Semantics.TEXCOORD, 'f', 2)
-)
-
-
-VS = (pathlib.Path(__file__).parent / 'shader.vert').read_text()
-FS = (pathlib.Path(__file__).parent / 'shader.frag').read_text()
+import shaders
 
 
 class Scene:
@@ -38,17 +29,17 @@ class Scene:
         self.camera = Camera()
         self.clear_color = (0.0, 0.0, 1.0, 0.0)
 
-        self.shader = ShaderProgram(VS, FS)
+        self.gizmo_shader = shaders.GizmoShader
         self.lightDir = lah.Vec3(1, -3, 10).normalized
 
         self.gizmos = []
         self.nodes = []
 
         # grid
-        builder = MeshBuilder(vertex_layout)
+        builder = MeshBuilder(self.gizmo_shader.vertex_layout)
         builder.create_grid(1, 5)
         mesh = Drawer.from_builder(builder)
-        mesh.create_submesh(self.shader)
+        mesh.create_submesh(self.gizmo_shader)
         self.gizmos.append(MeshNode('grid', mesh))
 
     def add_mesh(self, name, mesh: Drawer):

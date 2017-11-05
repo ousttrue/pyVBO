@@ -30,12 +30,14 @@ def compileShader(source, shaderType):
 
 
 class ShaderProgram:
-    def __init__(self, vs_source, fs_source):
+    def __init__(self, vs_source, fs_source, vertex_layout, vertex_stride=None):
         self.vs_source = vs_source
         self.fs_source = fs_source
         self.program = None
         self.is_initialized = False
         self.uniform_map = {}
+        self.vertex_layout = vertex_layout
+        self.vertex_stride = vertex_stride
 
     def initialize(self):
         logger.info('create program')

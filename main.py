@@ -6,12 +6,12 @@ import time
 import pathlib
 
 from PySide import QtGui, QtCore
-from PIL import Image
 
 import glglue.pysidegl
 from scene import Scene
 import pyvbo
-from renderer import Drawer, SubMesh, Texture
+from renderer import Drawer
+import shaders
 
 
 class QPlainTextEditLogger(Handler):
@@ -109,27 +109,7 @@ class MainWindow(QtGui.QMainWindow):
             model.vertices[i].pos.y *= model.metadata.to_meter
             model.vertices[i].pos.z *= model.metadata.to_meter
 
-        mesh = Drawer.from_pmd(model)
-
-        def create_submesh(material):
-            texture = Texture()
-            if material.texture:
-                texture_name = material.texture.decode('cp932')
-                if '*' in texture_name:
-                    texture_name, spa = texture_name.split('*', 1)
-                texture_file = path.parent / texture_name
-                if texture_file.exists():
-                    logger.debug("%s exists", texture_file)
-                    with texture_file.open('rb') as f:
-                        image = Image.open(f)
-                        image=image.convert('RGBA')
-                    texture.create_texture(
-                        image.width, image.height, image.tobytes())
-                else:
-                    logger.warning("%s not exists", texture_file)
-            return SubMesh(self.scene.shader, material.index_count, material.color, texture)
-        mesh.submeshes = [create_submesh(x) for x in model.materials]
-
+        mesh = Drawer.from_pmd(model, shaders.MmdShader)
         self.scene.add_mesh(model.metadata.name, mesh)
 
 
