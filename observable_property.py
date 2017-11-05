@@ -21,7 +21,10 @@ class Prop(Generic[T]):
 
     @value.setter
     def value(self, value: T):
-        if self._value == value:
+        if self._value is None:
+            if value is None:
+                return
+        elif self._value == value:
             return
         self._value = value
         self.emit(self._value)

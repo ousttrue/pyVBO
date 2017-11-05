@@ -3,6 +3,7 @@ from typing import List
 
 import lah
 from renderer import Drawer, RenderContext
+from observable_property import Prop
 
 
 class ComponentBase(metaclass=ABCMeta):
@@ -20,6 +21,7 @@ class Node:
         self.name = name
         self.model = lah.Transform.identity()
         self.components: List[ComponentBase] = []
+        self.visible = Prop[bool](True)
 
     def set_position(self, x: float, y: float, z: float)->None:
         self.model.pos = lah.Vec3(x, y, z)
@@ -32,8 +34,9 @@ class Node:
             x.update(now)
 
     def render(self, context: RenderContext)->None:
-        for x in self.components:
-            x.render(context)
+        if self.visible.value:
+            for x in self.components:
+                x.render(context)
 
 
 class MeshComponent(ComponentBase):

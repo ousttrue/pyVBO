@@ -83,6 +83,8 @@ class MainWindow(QtGui.QMainWindow):
         self.inspector_dock = self.create_dock(
             self.inspector_widget, "inspector", QtCore.Qt.RightDockWidgetArea)
 
+        self.scene_widget.selected.connect(self.inspector_widget.set_node)           
+
     def create_dock(self, widget, name, area):
         dock = QtGui.QDockWidget(name, self)
         dock.setWidget(widget)

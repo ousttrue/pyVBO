@@ -3,10 +3,21 @@ logger = getLogger(__name__)
 
 from typing import Iterable
 
-from PySide import QtGui
-from observable_property import ListPropEvent, RGBAf
+from PySide import QtGui, QtCore
+from observable_property import Prop, ListPropEvent, RGBAf
 
 from scene import Node
+
+
+class NodeItem(QtGui.QTreeWidgetItem):
+    def __init__(self, node: Node)->None:
+        super().__init__([node.name])
+        self.node = node
+        self.setData(0, QtCore.Qt.CheckStateRole,
+                     QtCore.Qt.Checked if node.visible.value else QtCore.Qt.Unchecked)
+
+    def update_checked(self):
+        self.node.visible.value = self.checkState(0) == QtCore.Qt.Checked
 
 
 class SceneTreeWidget(QtGui.QWidget):
@@ -29,6 +40,20 @@ class SceneTreeWidget(QtGui.QWidget):
         self.scene_tree = self.create_scene_tree()
         vbox.addWidget(self.scene_tree)
 
+        # active node
+        self.selected = Prop[Node](None)
+
+        def item_clicked(item: NodeItem):
+            self.selected.value = item.node
+        self.gizmo_tree.itemClicked.connect(item_clicked)
+        self.scene_tree.itemClicked.connect(item_clicked)
+
+        self.gizmo_tree.itemChanged.connect(self.on_item_changed)
+        self.scene_tree.itemChanged.connect(self.on_item_changed)
+
+    def on_item_changed(self, item):
+        item.update_checked()
+
     def create_gizmo_tree(self)->QtGui.QWidget:
         gizmo_tree = QtGui.QTreeWidget(self)
         gizmo_tree.setHeaderLabels(["gizmos"])
@@ -38,10 +63,10 @@ class SceneTreeWidget(QtGui.QWidget):
             if event == ListPropEvent.Updated:
                 gizmo_tree.clear()
                 for x in nodes:
-                    gizmo_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+                    gizmo_tree.addTopLevelItem(NodeItem(x))
             elif event == ListPropEvent.Added:
                 for x in nodes:
-                    gizmo_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+                    gizmo_tree.addTopLevelItem(NodeItem(x))
             else:
                 logger.warning('unknown event: %s', event)
 
@@ -58,10 +83,10 @@ class SceneTreeWidget(QtGui.QWidget):
             if event == ListPropEvent.Updated:
                 scene_tree.clear()
                 for x in nodes:
-                    scene_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+                    scene_tree.addTopLevelItem(NodeItem(x))
             elif event == ListPropEvent.Added:
                 for x in nodes:
-                    scene_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+                    scene_tree.addTopLevelItem(NodeItem(x))
             else:
                 logger.warning('unknown event: %s', event)
         self.scene.nodes.connect(from_prop)
