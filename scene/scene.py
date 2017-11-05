@@ -10,7 +10,7 @@ from renderer import Drawer, MeshBuilder, Camera, RenderContext
 import shaders
 from observable_property import Prop, ListProp, RGBAf
 
-from .node import MeshNode, Node
+from .node import Node, MeshComponent
 
 
 class Scene:
@@ -26,25 +26,42 @@ class Scene:
         self.mouseX = 0
         self.mouseY = 0
         self.mouseFirst = True
-        self.camera = Camera()
-
         self.background_color = Prop[RGBAf](RGBAf(0.0, 0.0, 1.0, 0.0))
 
-        self.gizmo_shader = shaders.GizmoShader
-        self.lightDir = lah.Vec3(1, -3, 10).normalized
-
+        #
+        # gizmos
+        #
         self.gizmos = ListProp[Node]()
-        self.nodes = ListProp[Node]()
+        self.gizmo_shader = shaders.GizmoShader
 
         # grid
         builder = MeshBuilder(self.gizmo_shader.vertex_layout)
         builder.create_grid(1, 5)
         mesh = Drawer.from_builder(builder)
         mesh.create_submesh(self.gizmo_shader)
-        self.gizmos.append(MeshNode('grid', mesh))
+        grid_node = Node('grid')
+        grid_node.components.append(MeshComponent(mesh))
+        self.gizmos.append(grid_node)
+
+        # camera
+        self.camera = Camera()
+        camera_node = Node('camera')
+        self.gizmos.append(camera_node)
+
+        # light
+        self.lightDir = lah.Vec3(1, -3, 10).normalized
+        light_node = Node('light')
+        self.gizmos.append(light_node)
+
+        #
+        # nodes
+        #
+        self.nodes = ListProp[Node]()
 
     def add_mesh(self, name, mesh: Drawer):
-        self.nodes.reset(MeshNode(name, mesh))
+        mesh_node = Node(name)
+        mesh_node.components.append(MeshComponent(mesh))
+        self.nodes.reset(mesh_node)
 
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
@@ -124,7 +141,13 @@ class Scene:
                      background_color.blue, background_color.alpha)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        #
+        # update
+        #
+
+        #
         # render
+        #
         context = RenderContext(self.camera, self.lightDir)
 
         for x in self.gizmos.values:
