@@ -8,9 +8,9 @@ from OpenGL.GLU import *
 import lah
 from renderer import Drawer, MeshBuilder, Camera, RenderContext
 import shaders
-from observable_property import Prop, ListProp, ListPropEvent, RGBAf
+from observable_property import Prop, ListProp, RGBAf
 
-from .node import MeshNode
+from .node import MeshNode, Node
 
 
 class Scene:
@@ -33,8 +33,8 @@ class Scene:
         self.gizmo_shader = shaders.GizmoShader
         self.lightDir = lah.Vec3(1, -3, 10).normalized
 
-        self.gizmos = []
-        self.nodes = []
+        self.gizmos = ListProp[Node]()
+        self.nodes = ListProp[Node]()
 
         # grid
         builder = MeshBuilder(self.gizmo_shader.vertex_layout)
@@ -44,8 +44,7 @@ class Scene:
         self.gizmos.append(MeshNode('grid', mesh))
 
     def add_mesh(self, name, mesh: Drawer):
-        self.nodes.clear()
-        self.nodes.append(MeshNode(name, mesh))
+        self.nodes.reset(MeshNode(name, mesh))
 
     def onResize(self, w: int, h: int):
         glViewport(0, 0, w, h)
@@ -128,10 +127,10 @@ class Scene:
         # render
         context = RenderContext(self.camera, self.lightDir)
 
-        for x in self.gizmos:
+        for x in self.gizmos.values:
             context.set_model(x.model)
             x.render(context)
 
-        for x in self.nodes:
+        for x in self.nodes.values:
             context.set_model(x.model)
             x.render(context)

@@ -8,7 +8,8 @@ class Prop(Generic[T]):
 
     def __init__(self, value: T, callbacks: Iterable[Callable[[T], None]] = None)->None:
         self._value = value
-        self.callbacks: List[Callable[[T], None]] = [x for x in callbacks] if callbacks else []
+        self.callbacks: List[Callable[[T], None]] = [
+            x for x in callbacks] if callbacks else []
 
     def connect(self, callback: Callable[[T], None])->None:
         callback(self._value)
@@ -39,13 +40,29 @@ class ListPropEvent(Enum):
 
 
 class ListProp(Generic[T]):
-    def __init__(self, values: List[T])->None:
-        self.values: List[T] = values[:]
+    def __init__(self, values: List[T] = None)->None:
+        self._values: List[T] = [] if (values is None) else values[:]
         self.callbacks: List[Callable[[ListPropEvent, Iterable[T]], None]] = []
 
     def connect(self, callback: Callable[[ListPropEvent, Iterable[T]], None])->None:
-        callback(ListPropEvent.Updated, self.values)
+        callback(ListPropEvent.Updated, self._values)
         self.callbacks.append(callback)
+
+    @property
+    def values(self)->List[T]:
+        return self._values
+
+    def append(self, value: T)->None:
+        self._values.append(value)
+        self.emit(ListPropEvent.Added, [value])
+
+    def reset(self, *values: List[T])->None:
+        self._values = values[:]
+        self.emit(ListPropEvent.Updated, self._values)
+
+    def emit(self, event: ListPropEvent, values: List[T])->None:
+        for x in self.callbacks:
+            x(event, values)
 
 
 class RGBAf(NamedTuple):

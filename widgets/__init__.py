@@ -29,20 +29,41 @@ class SceneTreeWidget(QtGui.QWidget):
         vbox.addWidget(self.scene_tree)
 
     def create_gizmo_tree(self)->QtGui.QWidget:
-        self.gizmos_prop = ListProp(self.scene.gizmos)
         gizmo_tree = QtGui.QTreeWidget(self)
-        gizmo_tree.setHeaderLabels(["name"])
+        gizmo_tree.setHeaderLabels(["gizmos"])
 
         def from_prop(event: ListPropEvent, nodes: Iterable[Node]):
             logger.info('%s: %s', event, nodes)
-        self.gizmos_prop.connect(from_prop)
+            if event == ListPropEvent.Updated:
+                gizmo_tree.clear()
+                for x in nodes:
+                    gizmo_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+            elif event == ListPropEvent.Added:
+                for x in nodes:
+                    gizmo_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+            else:
+                logger.warning('unknown event: %s', event)
+
+        self.scene.gizmos.connect(from_prop)
 
         return gizmo_tree
 
     def create_scene_tree(self)->QtGui.QWidget:
-        self.nodes_prop = ListProp(self.scene.nodes)
         scene_tree = QtGui.QTreeWidget(self)
-        scene_tree.setHeaderLabels(["name"])
+        scene_tree.setHeaderLabels(["models"])
+
+        def from_prop(event: ListPropEvent, nodes: Iterable[Node]):
+            logger.info('%s: %s', event, nodes)
+            if event == ListPropEvent.Updated:
+                scene_tree.clear()
+                for x in nodes:
+                    scene_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+            elif event == ListPropEvent.Added:
+                for x in nodes:
+                    scene_tree.addTopLevelItem(QtGui.QTreeWidgetItem([x.name]))
+            else:
+                logger.warning('unknown event: %s', event)
+        self.scene.nodes.connect(from_prop)
 
         return scene_tree
 
