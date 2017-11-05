@@ -2,15 +2,14 @@
 import logging
 logger = logging.getLogger(__name__)
 
-import pathlib
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
 import lah
-from renderer import Drawer, ShaderProgram, MeshBuilder, Camera, RenderContext
-from .node import MeshNode
-
+from renderer import Drawer, MeshBuilder, Camera, RenderContext
 import shaders
+
+from .node import MeshNode
 
 
 class Scene:
