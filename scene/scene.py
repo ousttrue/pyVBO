@@ -8,6 +8,7 @@ from OpenGL.GLU import *
 import lah
 from renderer import Drawer, MeshBuilder, Camera, RenderContext
 import shaders
+from observable_property import Prop, ListProp, ListPropEvent, RGBAf
 
 from .node import MeshNode
 
@@ -26,7 +27,8 @@ class Scene:
         self.mouseY = 0
         self.mouseFirst = True
         self.camera = Camera()
-        self.background_color = (0.0, 0.0, 1.0, 0.0)
+
+        self.background_color = Prop[RGBAf](RGBAf(0.0, 0.0, 1.0, 0.0))
 
         self.gizmo_shader = shaders.GizmoShader
         self.lightDir = lah.Vec3(1, -3, 10).normalized
@@ -118,7 +120,9 @@ class Scene:
             self.initialize()
 
         # clear
-        glClearColor(*self.background_color)
+        background_color = self.background_color.value
+        glClearColor(background_color.red, background_color.green,
+                     background_color.blue, background_color.alpha)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # render

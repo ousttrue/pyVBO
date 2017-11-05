@@ -4,53 +4,8 @@ logger = getLogger(__name__)
 from typing import TypeVar, Generic, List, Callable, Iterable
 from enum import Enum
 from PySide import QtGui, QtCore
-
-
-T = TypeVar('T')
-
-
-class Prop(Generic[T]):
-
-    def __init__(self, value: T, callbacks: Iterable[Callable[[T], None]] = None)->None:
-        self._value = value
-        self.callbacks: List[Callable[[T], None]] = [x for x in callbacks] if callbacks else []
-
-    def connect(self, callback: Callable[[T], None])->None:
-        callback(self._value)
-        self.callbacks.append(callback)
-
-    @property
-    def value(self)->T:
-        return self._value
-
-    @value.setter
-    def value(self, value: T):
-        if self._value == value:
-            return
-        self._value = value
-        self.emit(self._value)
-
-    def emit(self, value: T):
-        # logger.debug('emit')
-        for x in self.callbacks:
-            x(value)
-
-
-class ListPropEvent(Enum):
-    Updated = 0
-    Added = 1
-    Removed = 2
-    Cleared = 3
-
-
-class ListProp(Generic[T]):
-    def __init__(self, values: List[T])->None:
-        self.values: List[T] = values[:]
-        self.callbacks: List[Callable[[ListPropEvent, Iterable[T]], None]] = []
-
-    def connect(self, callback: Callable[[ListPropEvent, Iterable[T]], None])->None:
-        callback(ListPropEvent.Updated, self.values)
-        self.callbacks.append(callback)
+from scene import Node
+from observable_property import Prop, ListProp, ListPropEvent, RGBAf
 
 
 class SceneTreeWidget(QtGui.QWidget):
@@ -78,6 +33,10 @@ class SceneTreeWidget(QtGui.QWidget):
         gizmo_tree = QtGui.QTreeWidget(self)
         gizmo_tree.setHeaderLabels(["name"])
 
+        def from_prop(event: ListPropEvent, nodes: Iterable[Node]):
+            logger.info('%s: %s', event, nodes)
+        self.gizmos_prop.connect(from_prop)
+
         return gizmo_tree
 
     def create_scene_tree(self)->QtGui.QWidget:
@@ -88,25 +47,18 @@ class SceneTreeWidget(QtGui.QWidget):
         return scene_tree
 
     def create_backbround_color(self)->QtGui.QWidget:
-        self.background_color_prop = Prop[QtGui.QColor](
-            QtGui.QColor.fromRgbF(*self.scene.background_color))
         background_color = QtGui.QPushButton(self)
 
-        def from_prop(value: QtGui.QColor):
+        def from_prop(value: RGBAf):
+            int_color = ",".join(str(int(255 * x)) for x in value[:3])
             background_color.setStyleSheet(
-                f'background-color: rgb({value.red()}, {value.green()}, {value.blue()})')
-            self.scene.background_color = (
-                value.redF(), value.greenF(), value.blueF(), value.alphaF())
-        self.background_color_prop.connect(from_prop)
-
-        '''
-        def x()->None:
-            pass
-        self.background_color_prop.connect(x)
-        '''
+                f'background-color: rgb({int_color})')
+        self.scene.background_color.connect(from_prop)
 
         def background_color_clicked():
-            self.background_color_prop.value = QtGui.QColorDialog.getColor()
+            color = QtGui.QColorDialog.getColor()
+            self.scene.background_color.value = RGBAf(
+                color.redF(), color.greenF(), color.blueF(), color.alphaF())
         background_color.clicked.connect(background_color_clicked)
 
         return background_color
