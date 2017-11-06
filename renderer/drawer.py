@@ -40,8 +40,23 @@ class Drawer:
         self.layout = None
         self.stride = 0
         self.vao = None
-        self.topology = None
+        self._topology = None
+        self._gl_topology = None
         self.submeshes = []
+
+    @property
+    def topology(self):
+        return self._topology
+
+    @topology.setter
+    def topology(self, value: Topology):
+        self._topology = value
+        if value == Topology.Triangle:
+            self._gl_topology = GL_TRIANGLES
+        elif value == Topology.Line:
+            self._gl_topology = GL_LINES
+        else:
+            raise Exception("unknown topology")
 
     @staticmethod
     def from_builder(builder: MeshBuilder, shader: ShaderProgram):
@@ -50,16 +65,10 @@ class Drawer:
         self.vertices = VBO(builder.vertices)
         self.layout = builder.layout
         self.stride = builder.stride
-
-        if builder.topology == Topology.Triangle:
-            self.topology = GL_TRIANGLES
-        elif builder.topology == Topology.Line:
-            self.topology = GL_LINES
-        else:
-            raise Exception("unknown topology")
-
-        self.create_submesh(shader)
-
+        self.topology = builder.topology
+        self.submeshes = [
+            SubMesh(shader, len(self.indices.data), (1, 1, 1, 1), Texture())
+        ]        
         return self
 
     @staticmethod
@@ -69,7 +78,7 @@ class Drawer:
         self.vertices = VBO(model.vertices, GL_FLOAT)
         self.layout = shader.vertex_layout
         self.stride = shader.vertex_stride
-        self.topology = GL_TRIANGLES
+        self.topology = Topology.Triangle
 
         def create_submesh(material):
             texture = Texture()
@@ -102,14 +111,6 @@ class Drawer:
             self.vertices.setAttrib(i, x, self.stride)
         self.indices.setIndex()
 
-    def get_texture(self, name: str):
-        return None
-
-    def create_submesh(self, shader):
-        self.submeshes = [
-            SubMesh(shader, len(self.indices.data), (1, 1, 1, 1), Texture())
-        ]
-
     def render(self, context: RenderContext):
         if not self.vao:
             self.initialize()
@@ -123,6 +124,6 @@ class Drawer:
 
             x.apply_shader(context)
 
-            self.indices.drawIndex(self.topology, offset, x.index_count)
+            self.indices.drawIndex(self._gl_topology, offset, x.index_count)
             offset += x.index_count
         #assert len(self.indices.data) == offset

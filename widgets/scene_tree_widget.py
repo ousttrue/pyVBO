@@ -48,11 +48,10 @@ class SceneTreeWidget(QtGui.QWidget):
         self.gizmo_tree.itemClicked.connect(item_clicked)
         self.scene_tree.itemClicked.connect(item_clicked)
 
-        self.gizmo_tree.itemChanged.connect(self.on_item_changed)
-        self.scene_tree.itemChanged.connect(self.on_item_changed)
-
-    def on_item_changed(self, item):
-        item.update_checked()
+        def on_item_changed(item):
+            item.update_checked()
+        self.gizmo_tree.itemChanged.connect(on_item_changed)
+        self.scene_tree.itemChanged.connect(on_item_changed)
 
     def create_gizmo_tree(self)->QtGui.QWidget:
         gizmo_tree = QtGui.QTreeWidget(self)

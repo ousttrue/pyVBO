@@ -43,6 +43,10 @@ class MeshComponent(ComponentBase):
     def __init__(self, mesh: Drawer)->None:
         self.mesh = mesh
 
+    @property
+    def topology(self):
+        return self.mesh.topology
+
     def update(self, now: float):
         pass
 
