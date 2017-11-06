@@ -4,7 +4,7 @@ logger = getLogger(__name__)
 
 from OpenGL.GL import *
 
-from .vbo import VBO
+from .vbo import ArrayVBO, ArrayVBOIndex, CtypesVBO
 from .texture import Texture
 from .vertexbuffer import Topology, AttributeLayout, Semantics, MeshBuilder
 from .rendercontext import RenderContext
@@ -61,21 +61,21 @@ class Drawer:
     @staticmethod
     def from_builder(builder: MeshBuilder, shader: ShaderProgram):
         self = Drawer()
-        self.indices = VBO(builder.indices)
-        self.vertices = VBO(builder.vertices)
+        self.indices = ArrayVBOIndex(builder.indices)
+        self.vertices = ArrayVBO(builder.vertices)
         self.layout = builder.layout
         self.stride = builder.stride
         self.topology = builder.topology
         self.submeshes = [
             SubMesh(shader, len(self.indices.data), (1, 1, 1, 1), Texture())
-        ]        
+        ]
         return self
 
     @staticmethod
     def from_pmd(model: pmd.Model, shader: ShaderProgram):
         self = Drawer()
-        self.indices = VBO(model.indices)
-        self.vertices = VBO(model.vertices, GL_FLOAT)
+        self.indices = ArrayVBOIndex(model.indices)
+        self.vertices = CtypesVBO(model.vertices)
         self.layout = shader.vertex_layout
         self.stride = shader.vertex_stride
         self.topology = Topology.Triangle

@@ -22,30 +22,13 @@ def to_gltype(code):
         raise RuntimeError('unknown code: %s' % code)
 
 
-class VBO:
-    def __init__(self, data, gltype=None):
+class VBOBase:
+    def __init__(self)->None:
         self.vbo = None
-        self.data = data
-        if gltype:
-            self.gltype = gltype
-        else:
-            self.gltype = to_gltype(data.typecode)
 
     def initialize(self):
         self.vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-
-        if isinstance(self.data, array.array):
-            addr, _ = self.data.buffer_info()
-            glBufferData(GL_ARRAY_BUFFER,
-                         self.data.itemsize * len(self.data),
-                         ctypes.c_void_p(addr), GL_STATIC_DRAW)
-        elif isinstance(self.data, ctypes.Array):
-            glBufferData(GL_ARRAY_BUFFER,
-                         ctypes.sizeof(self.data._type_) * self.data._length_,
-                         self.data, GL_STATIC_DRAW)
-        else:
-            raise NotImplementedError()
 
     def setAttrib(self, slot, layout, stride):
         glEnableVertexAttribArray(slot)
@@ -56,6 +39,39 @@ class VBO:
                               False,
                               stride,
                               ctypes.c_void_p(layout.offset))
+
+
+class CtypesVBO(VBOBase):
+    def __init__(self, data: ctypes.Array)->None:
+        super().__init__()
+        self.data = data
+
+    def initialize(self):
+        super().initialize()
+
+        glBufferData(GL_ARRAY_BUFFER,
+                     ctypes.sizeof(self.data._type_) * self.data._length_,
+                     self.data, GL_STATIC_DRAW)
+
+
+class ArrayVBO(VBOBase):
+    def __init__(self, data: array.array)->None:
+        super().__init__()
+        self.data = data
+
+    def initialize(self):
+        super().initialize()
+
+        addr, _ = self.data.buffer_info()
+        glBufferData(GL_ARRAY_BUFFER,
+                     self.data.itemsize * len(self.data),
+                     ctypes.c_void_p(addr), GL_STATIC_DRAW)
+
+
+class ArrayVBOIndex(ArrayVBO):
+    def __init__(self, data: array.array)->None:
+        super().__init__(data)
+        self.gltype = to_gltype(data.typecode)
 
     def setIndex(self):
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.vbo)
