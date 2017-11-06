@@ -9,36 +9,12 @@ from .bytesreader import BytesReader
 from .metadata import MetaData, Direction, Coordinate
 
 
-class Float2(ctypes.Structure):
-    _fields_ = [
-        ("x", ctypes.c_float),
-        ("y", ctypes.c_float),
-    ]
-
-
-class Float3(ctypes.Structure):
-    _fields_ = [
-        ("x", ctypes.c_float),
-        ("y", ctypes.c_float),
-        ("z", ctypes.c_float),
-    ]
-
-
-class Float4(ctypes.Structure):
-    _fields_ = [
-        ("x", ctypes.c_float),
-        ("y", ctypes.c_float),
-        ("z", ctypes.c_float),
-        ("w", ctypes.c_float),
-    ]
-
-
 class Vertex(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        ("pos", Float3),
-        ("normal", Float3),
-        ("uv", Float2),
+        ("pos", ctypes.c_float * 3),
+        ("normal", ctypes.c_float * 3),
+        ("uv", ctypes.c_float * 2),
         ("bone0", ctypes.c_int16),
         ("bone1", ctypes.c_int16),
         ("weight0", ctypes.c_byte),
@@ -54,8 +30,8 @@ class Material(ctypes.Structure):
     _fields_ = [
         ('color', ctypes.c_float * 4),
         ('specularity', ctypes.c_float),
-        ('specular', Float3),
-        ('ambient', Float3),
+        ('specular', ctypes.c_float * 3),
+        ('ambient', ctypes.c_float * 3),
         ('toon_index', ctypes.c_byte),
         ('flag', ctypes.c_byte),
         ('index_count', ctypes.c_uint32),

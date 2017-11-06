@@ -15,6 +15,19 @@ class VertexModel(QtCore.QAbstractTableModel):
         super().__init__()
         self.mesh = mesh
 
+    def rowCount(self, parent: QtCore.QModelIndex):
+        return self.mesh.vertices.count
+
+    def columnCount(self, index: QtCore.QModelIndex):
+        return len(self.mesh.vertices.layouts)
+
+    def data(self, index: QtCore.QModelIndex, role):
+        if not index.isValid():
+            return
+
+        if role == QtCore.Qt.DisplayRole:
+            return ', '.join(str(x) for x in self.mesh.vertices.get(index.row(), index.column())).strip()
+
 
 class MeshComponentWidget(QtGui.QWidget):
     def __init__(self, parent: QtGui.QWidget, mesh: MeshComponent)->None:
@@ -80,7 +93,9 @@ class InspectorWidget(QtGui.QWidget):
     def set_node(self, node: Node)->None:
         # clear
         for x in self.component_widgets:
+            x.setParent(None)
             self.component_layout.removeWidget(x)
+        self.component_widgets.clear()
 
         if not node:
             return

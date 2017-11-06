@@ -106,9 +106,7 @@ class Drawer:
 
         self.vao = glGenVertexArrays(1)
         glBindVertexArray(self.vao)
-
-        for i, x in enumerate(self.layout):
-            self.vertices.setAttrib(i, x, self.stride)
+        self.vertices.set_layouts(self.layout, self.stride)
         self.indices.setIndex()
 
     def render(self, context: RenderContext):

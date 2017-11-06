@@ -38,6 +38,10 @@ class AttributeLayout:
     def size(self):
         return value_size(self.value_type) * self.value_elements
 
+    @property
+    def pack_format(self):
+        return self.value_type * self.value_elements
+
 
 def create_format(layout):
     return "".join(("%d%s" % (x.value_elements, x.value_type) for x in layout))

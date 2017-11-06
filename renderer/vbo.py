@@ -2,11 +2,15 @@
 from logging import getLogger
 logger = getLogger(__name__)
 
-
 import array
 import ctypes
+import struct
+from typing import List
+
 from OpenGL.GL import *
 from OpenGL.GLU import *
+
+from .vertexbuffer import AttributeLayout
 
 
 def to_gltype(code):
@@ -25,26 +29,32 @@ def to_gltype(code):
 class VBOBase:
     def __init__(self)->None:
         self.vbo = None
+        self.stride = 0
+        self.layouts: List[AttributeLayout] = []
 
     def initialize(self):
         self.vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
 
-    def setAttrib(self, slot, layout, stride):
-        glEnableVertexAttribArray(slot)
-        #glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-        glVertexAttribPointer(slot,
-                              layout.value_elements,
-                              to_gltype(layout.value_type),
-                              False,
-                              stride,
-                              ctypes.c_void_p(layout.offset))
+    def set_layouts(self, layouts: List[AttributeLayout], stride: int):
+        self.stride = stride
+        self.layouts = layouts[:]
+        for slot, layout in enumerate(layouts):
+            glEnableVertexAttribArray(slot)
+            #glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+            glVertexAttribPointer(slot,
+                                  layout.value_elements,
+                                  to_gltype(layout.value_type),
+                                  False,
+                                  stride,
+                                  ctypes.c_void_p(layout.offset))
 
 
 class CtypesVBO(VBOBase):
     def __init__(self, data: ctypes.Array)->None:
         super().__init__()
         self.data = data
+        self.col_map = {i: x[0] for i, x in enumerate(data._type_._fields_)}
 
     def initialize(self):
         super().initialize()
@@ -53,11 +63,20 @@ class CtypesVBO(VBOBase):
                      ctypes.sizeof(self.data._type_) * self.data._length_,
                      self.data, GL_STATIC_DRAW)
 
+    @property
+    def count(self):
+        return len(self.data)
+
+    def get(self, row, col):
+        vertex = self.data[row]
+        return getattr(vertex, self.col_map[col])
+
 
 class ArrayVBO(VBOBase):
     def __init__(self, data: array.array)->None:
         super().__init__()
         self.data = data
+        self.stride = None
 
     def initialize(self):
         super().initialize()
@@ -66,6 +85,17 @@ class ArrayVBO(VBOBase):
         glBufferData(GL_ARRAY_BUFFER,
                      self.data.itemsize * len(self.data),
                      ctypes.c_void_p(addr), GL_STATIC_DRAW)
+
+    @property
+    def count(self):
+        return (len(self.data) * self.data.itemsize) / self.stride
+
+    def get(self, row: int, col: int):
+        assert self.data.typecode == 'B'
+        layout = self.layouts[col]
+        offset = self.stride * row + layout.offset
+        data = bytes(self.data[offset:offset + layout.size])
+        return struct.unpack(layout.pack_format, data)
 
 
 class ArrayVBOIndex(ArrayVBO):

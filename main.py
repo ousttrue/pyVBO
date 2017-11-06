@@ -129,9 +129,9 @@ class MainWindow(QtGui.QMainWindow):
 
         # fix scale
         for i in range(len(model.vertices)):
-            model.vertices[i].pos.x *= model.metadata.to_meter
-            model.vertices[i].pos.y *= model.metadata.to_meter
-            model.vertices[i].pos.z *= model.metadata.to_meter
+            model.vertices[i].pos[0] *= model.metadata.to_meter
+            model.vertices[i].pos[1] *= model.metadata.to_meter
+            model.vertices[i].pos[2] *= model.metadata.to_meter
 
         mesh = Drawer.from_pmd(model, shaders.MmdShader)
         self.scene.add_mesh(model.metadata.name, mesh)
@@ -182,7 +182,7 @@ def main():
     getLogger('').addHandler(window.log_handler)
     logger.debug('set logger')
 
-    window.resize(640, 480)
+    window.resize(1280, 720)
     window.show()
 
     loop(app, window, scene)
