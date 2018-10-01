@@ -5,7 +5,9 @@ import sys
 import time
 import pathlib
 
-from PySide import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QTextEdit, QDockWidget, QFileDialog
+from PyQt5.QtGui import QKeySequence, QTextCursor
+from PyQt5.QtCore import Qt, QEventLoop
 
 import glglue.pysidegl
 from scene import Scene
@@ -40,15 +42,15 @@ class QPlainTextEditLogger(Handler):
         else:
             msg = f'{msg}<br>'
 
-        self.widget.textCursor().movePosition(QtGui.QTextCursor.Start)
+        self.widget.textCursor().movePosition(QTextCursor.Start)
         self.widget.textCursor().insertHtml(msg)
-        self.widget.moveCursor(QtGui.QTextCursor.End)
+        self.widget.moveCursor(QTextCursor.End)
 
     def write(self, m):
         pass
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, scene: Scene)->None:
         super().__init__()
         self.scene = scene
@@ -68,25 +70,25 @@ class MainWindow(QtGui.QMainWindow):
         # dock
         #
         # logger dock
-        self.log_widget = QtGui.QTextEdit(self)
+        self.log_widget = QTextEdit(self)
         self.log_handler = QPlainTextEditLogger(self.log_widget)
         self.logger_dock = self.create_dock(
-            self.log_widget, "logger", QtCore.Qt.BottomDockWidgetArea)
+            self.log_widget, "logger", Qt.BottomDockWidgetArea)
 
         # scene tree dock
         self.scene_widget = SceneTreeWidget(self, scene)
         self.scene_dock = self.create_dock(
-            self.scene_widget, "scene", QtCore.Qt.LeftDockWidgetArea)
+            self.scene_widget, "scene", Qt.LeftDockWidgetArea)
 
         # inspector dock
         self.inspector_widget = InspectorWidget(self)
         self.inspector_dock = self.create_dock(
-            self.inspector_widget, "inspector", QtCore.Qt.RightDockWidgetArea)
+            self.inspector_widget, "inspector", Qt.RightDockWidgetArea)
 
         self.scene_widget.selected.connect(self.inspector_widget.set_node)           
 
     def create_dock(self, widget, name, area):
-        dock = QtGui.QDockWidget(name, self)
+        dock = QDockWidget(name, self)
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
         self.dock_menu.addAction(dock.toggleViewAction())
@@ -103,14 +105,14 @@ class MainWindow(QtGui.QMainWindow):
         '''
         file_menu = self.menubar.addMenu('&File')
 
-        openAction = QtGui.QAction("&Open...", self,
-                                   shortcut=QtGui.QKeySequence.Open,
+        openAction = QAction("&Open...", self,
+                                   shortcut=QKeySequence.Open,
                                    statusTip="Open an existing file",
                                    triggered=self.open)
         file_menu.addAction(openAction)
 
     def open(self):
-        filename, _ = QtGui.QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             self, 'Open file',
             str(self._open_dir) if self._open_dir else None,
             ';;'.join([
@@ -153,7 +155,7 @@ def loop(app, window, scene):
     frame_time = 1 / 30
     while not closed:
         count += 1
-        app.processEvents(QtCore.QEventLoop.AllEvents)
+        app.processEvents(QEventLoop.AllEvents)
 
         now = time.clock()
         delta = now - last_render_time
@@ -175,7 +177,7 @@ def main():
 
     scene = Scene()
 
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MainWindow(scene)
 
     # add handler to rootLogger
@@ -187,7 +189,7 @@ def main():
 
     loop(app, window, scene)
     logger.info('loop exit')
-    sys.exit(0)
+    #sys.exit(0)
 
 
 if __name__ == "__main__":

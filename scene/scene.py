@@ -120,7 +120,7 @@ class Scene:
             self.camera.yaw_pitch(dx, dy)
 
     def onWheel(self, d):
-        self.camera.dolly(d)
+        self.camera.dolly(d.y())
 
     def onKeyDown(self, keycode):
         logger.debug('onKeyDown: %d', keycode)

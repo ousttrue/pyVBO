@@ -3,47 +3,49 @@ logger = getLogger(__name__)
 
 from typing import List
 
-from PySide import QtGui, QtCore
+#from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QFormLayout
 
 from scene import Node, MeshComponent
 
 from renderer import Drawer
 
 
-class VertexModel(QtCore.QAbstractTableModel):
+class VertexModel(QAbstractTableModel):
     def __init__(self, mesh: Drawer)->None:
         super().__init__()
         self.mesh = mesh
 
-    def rowCount(self, parent: QtCore.QModelIndex):
+    def rowCount(self, parent: QModelIndex):
         return self.mesh.vertices.count
 
-    def columnCount(self, index: QtCore.QModelIndex):
+    def columnCount(self, index: QModelIndex):
         return len(self.mesh.vertices.layouts)
 
-    def data(self, index: QtCore.QModelIndex, role):
+    def data(self, index: QModelIndex, role):
         if not index.isValid():
             return
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return ', '.join(str(x) for x in self.mesh.vertices.get(index.row(), index.column())).strip()
 
 
-class MeshComponentWidget(QtGui.QWidget):
-    def __init__(self, parent: QtGui.QWidget, mesh: MeshComponent)->None:
+class MeshComponentWidget(QWidget):
+    def __init__(self, parent: QWidget, mesh: MeshComponent)->None:
         super().__init__(parent)
         self.mesh = mesh
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         self.setLayout(layout)
 
-        label = QtGui.QLabel('Mesh')
+        label = QLabel('Mesh')
         label.setStyleSheet('background-color:gray; color:white;')
         layout.addWidget(label)
 
         # Topology
-        topology_layout = QtGui.QHBoxLayout(self)
-        topology_layout.addWidget(QtGui.QLabel('topology'))
-        topology = QtGui.QLineEdit(self)
+        topology_layout = QHBoxLayout(self)
+        topology_layout.addWidget(QLabel('topology'))
+        topology = QLineEdit(self)
         topology_layout.addWidget(topology)
         topology.setText(mesh.topology.name)
         layout.addLayout(topology_layout)
@@ -61,31 +63,31 @@ class MeshComponentWidget(QtGui.QWidget):
         '''
 
 
-class InspectorWidget(QtGui.QWidget):
+class InspectorWidget(QWidget):
     def __init__(self, parent)->None:
         super().__init__(parent)
-        self.component_widgets: List[QtGui.QWidget] = []
+        self.component_widgets: List[QWidget] = []
 
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         self.setLayout(layout)
 
-        form_layout = QtGui.QFormLayout(self)
+        form_layout = QFormLayout(self)
         # name
-        self.name = QtGui.QLineEdit(self)
-        form_layout.addRow(QtGui.QLabel('name'), self.name)
+        self.name = QLineEdit(self)
+        form_layout.addRow(QLabel('name'), self.name)
 
         # pos
-        self.translation = QtGui.QLineEdit(self)
-        form_layout.addRow(QtGui.QLabel('translation'), self.translation)
+        self.translation = QLineEdit(self)
+        form_layout.addRow(QLabel('translation'), self.translation)
 
         # rotation
-        self.rotation = QtGui.QLineEdit(self)
-        form_layout.addRow(QtGui.QLabel('rotation'), self.rotation)
+        self.rotation = QLineEdit(self)
+        form_layout.addRow(QLabel('rotation'), self.rotation)
 
         layout.addLayout(form_layout)
 
         # compoonent placeholder
-        self.component_layout = QtGui.QVBoxLayout(self)
+        self.component_layout = QVBoxLayout(self)
         layout.addLayout(self.component_layout)
 
         layout.addStretch(1)

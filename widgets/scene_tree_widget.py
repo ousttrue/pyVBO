@@ -3,13 +3,14 @@ logger = getLogger(__name__)
 
 from typing import Iterable
 
-from PySide import QtGui, QtCore
+from PyQt5.QtWidgets import QTreeWidgetItem, QWidget, QVBoxLayout, QTreeWidget, QPushButton
+from PyQt5 import QtCore
 from observable_property import Prop, ListPropEvent, RGBAf
 
 from scene import Node
 
 
-class NodeItem(QtGui.QTreeWidgetItem):
+class NodeItem(QTreeWidgetItem):
     def __init__(self, node: Node)->None:
         super().__init__([node.name])
         self.node = node
@@ -20,12 +21,12 @@ class NodeItem(QtGui.QTreeWidgetItem):
         self.node.visible.value = self.checkState(0) == QtCore.Qt.Checked
 
 
-class SceneTreeWidget(QtGui.QWidget):
+class SceneTreeWidget(QWidget):
     def __init__(self, parent, scene)->None:
         super().__init__(parent)
         self.scene = scene
 
-        vbox = QtGui.QVBoxLayout(self)
+        vbox = QVBoxLayout(self)
         self.setLayout(vbox)
 
         # background color
@@ -53,8 +54,8 @@ class SceneTreeWidget(QtGui.QWidget):
         self.gizmo_tree.itemChanged.connect(on_item_changed)
         self.scene_tree.itemChanged.connect(on_item_changed)
 
-    def create_gizmo_tree(self)->QtGui.QWidget:
-        gizmo_tree = QtGui.QTreeWidget(self)
+    def create_gizmo_tree(self)->QWidget:
+        gizmo_tree = QTreeWidget(self)
         gizmo_tree.setHeaderLabels(["gizmos"])
 
         def from_prop(event: ListPropEvent, nodes: Iterable[Node]):
@@ -73,8 +74,8 @@ class SceneTreeWidget(QtGui.QWidget):
 
         return gizmo_tree
 
-    def create_scene_tree(self)->QtGui.QWidget:
-        scene_tree = QtGui.QTreeWidget(self)
+    def create_scene_tree(self)->QWidget:
+        scene_tree = QTreeWidget(self)
         scene_tree.setHeaderLabels(["models"])
 
         def from_prop(event: ListPropEvent, nodes: Iterable[Node]):
@@ -92,8 +93,8 @@ class SceneTreeWidget(QtGui.QWidget):
 
         return scene_tree
 
-    def create_backbround_color(self)->QtGui.QWidget:
-        background_color = QtGui.QPushButton(self)
+    def create_backbround_color(self)->QWidget:
+        background_color = QPushButton(self)
 
         def from_prop(value: RGBAf):
             int_color = ",".join(str(int(255 * x)) for x in value[:3])

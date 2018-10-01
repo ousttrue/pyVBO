@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from PyQt4 import QtCore, QtGui, QtOpenGL
-from PySide import QtCore, QtGui, QtOpenGL
+from PyQt5 import QtCore, QtGui, QtOpenGL
 
 
 class Widget(QtOpenGL.QGLWidget):
@@ -58,7 +57,7 @@ class Widget(QtOpenGL.QGLWidget):
             self.repaint()
 
     def wheelEvent(self, event):
-        if self.controller.onWheel(-event.delta()):
+        if self.controller.onWheel(-event.angleDelta()):
             self.repaint()
 
 
